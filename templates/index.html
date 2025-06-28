@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Password Strength Checker Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <style>
+        :root {
+            --color-bg-light: #f8f9fa;
+            --color-bg-dark: #121212;
+            --color-text-light: #212529;
+            --color-text-dark: #eee;
+            --color-primary-light: #0d6efd;
+            --color-primary-dark: #339af0;
+            --color-danger: #ff6b6b;
+            --color-warning: #ff922b;
+            --color-info: #339af0;
+            --color-success: #40c057;
+            --progress-gradient-light: linear-gradient(90deg, #339af0, #40c057);
+            --progress-gradient-dark: linear-gradient(90deg, #339af0, #40c057);
+        }
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            background: var(--color-bg-dark);
+            color: var(--color-text-dark);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+        body.light-mode {
+            background: var(--color-bg-light);
+            color: var(--color-text-light);
+        }
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            display: block;
+            transition: background-color 0.5s ease;
+        }
+        .d-flex-center {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        .container-card {
+            max-width: 600px;
+            width: 100%;
+            padding: 2rem;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(255,255,255,0.15);
+            transition: box-shadow 0.3s ease, background-color 0.5s ease;
+            backdrop-filter: blur(15px);
+            cursor: pointer;
+        }
+        body.light-mode .container-card {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.15);
+            color: var(--color-text-light);
+        }
+        .container-card:hover {
+            box-shadow: 0 0.75rem 2rem rgba(255,255,255,0.25);
+        }
+        .feedback { font-size: 0.95rem; color: #495057; }
+        body.light-mode .feedback { color: #6c757d; }
+        .strength-badge {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #eee;
+            text-shadow: 0 0 8px #0d6efd;
+            padding: 0.4em 0.75em;
+            border-radius: 1rem;
+            display: inline-block;
+            transition: box-shadow 0.5s ease;
+        }
+        .strength-very-weak {
+            background-color: var(--color-danger);
+            color: white;
+            animation: pulseRed 2s infinite;
+        }
+        .strength-weak {
+            background-color: var(--color-warning);
+            color: white;
+            animation: pulseOrange 2s infinite;
+        }
+        .strength-medium {
+            background-color: #ffd43b;
+            color: black;
+            animation: pulseYellow 2s infinite;
+        }
+        .strength-strong {
+            background-color: var(--color-success);
+            color: white;
+            animation: pulseGreen 2s infinite;
+        }
+        .strength-very-strong {
+            background-color: var(--color-primary-dark);
+            color: white;
+            animation: glowBlue 2s infinite;
+        }
+        @keyframes pulseRed {
+            0%, 100% { box-shadow: 0 0 8px #ff6b6b; }
+            50% { box-shadow: 0 0 20px #ff3b3b; }
+        }
+        @keyframes pulseOrange {
+            0%, 100% { box-shadow: 0 0 8px #ff922b; }
+            50% { box-shadow: 0 0 20px #ff6f00; }
+        }
+        @keyframes pulseYellow {
+            0%, 100% { box-shadow: 0 0 8px #ffd43b; }
+            50% { box-shadow: 0 0 20px #ffca00; }
+        }
+        @keyframes pulseGreen {
+            0%, 100% { box-shadow: 0 0 8px #40c057; }
+            50% { box-shadow: 0 0 20px #2d8a3e; }
+        }
+        @keyframes glowBlue {
+            0%, 100% { box-shadow: 0 0 10px #339af0; }
+            50% { box-shadow: 0 0 25px #1a73e8; }
+        }
+        .breach-found {
+            background-color: var(--color-danger);
+            color: white;
+            cursor: help;
+        }
+        .breach-not-found {
+            background-color: var(--color-success);
+            color: white;
+            cursor: help;
+        }
+        .breach-error {
+            background-color: var(--color-warning);
+            color: black;
+            cursor: help;
+        }
+        .icon-large {
+            font-size: 1.25rem;
+            vertical-align: middle;
+            margin-right: 0.25rem;
+        }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(255,255,255,0.1);
+            transition: box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            box-shadow: 0 0.75rem 1.5rem rgba(255,255,255,0.2);
+        }
+        .progress {
+            height: 1.5rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            background: linear-gradient(90deg, #444, #222);
+            box-shadow: inset 0 0 10px #000;
+        }
+        .progress-bar {
+            transition: width 1s ease;
+            background: linear-gradient(270deg, #339af0, #40c057, #339af0);
+            background-size: 600% 100%;
+            animation: gradientShift 3s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 0%; }
+            100% { background-position: 0% 0%; }
+        }
+        .btn-loading {
+            position: relative;
+        }
+        .btn-loading .spinner-border {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 1rem;
+            height: 1rem;
+            margin-top: -0.5rem;
+            margin-left: -0.5rem;
+            display: none;
+        }
+        .btn-loading.loading .spinner-border {
+            display: inline-block;
+        }
+        .btn-loading.loading .btn-text {
+            visibility: hidden;
+        }
+        /* Smooth fade and slide animations */
+        .fade-slide-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation-fill-mode: forwards;
+            animation-duration: 0.6s;
+            animation-timing-function: ease-out;
+        }
+        .fade-slide-in.aos-animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Dark mode toggle button */
+        #darkModeToggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+            background: var(--color-primary-dark);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--color-primary-dark);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #darkModeToggle:hover {
+            background: #1c7ed6;
+            box-shadow: 0 0 15px #1c7ed6;
+        }
+        body.light-mode #darkModeToggle {
+            background: var(--color-primary-light);
+            color: var(--color-text-light);
+            box-shadow: 0 0 10px var(--color-primary-light);
+        }
+        body.light-mode #darkModeToggle:hover {
+            background: #0d6efd;
+            box-shadow: 0 0 15px #0d6efd;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .container-card {
+                padding: 1rem;
+                margin: 0 0.5rem;
+            }
+            #darkModeToggle {
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+    <button id="darkModeToggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">Light Mode</button>
+    <div class="d-flex-center">
+        <main class="container-card position-relative" role="main" aria-labelledby="pageTitle" data-tilt data-tilt-glare data-tilt-max="15" data-aos="fade-up" data-aos-duration="800" tabindex="0">
+            <h1 id="pageTitle" class="mb-4 text-center">
+                <i class="bi bi-shield-lock-fill text-primary"></i> Password Strength Checker
+            </h1>
+            <form method="POST" novalidate id="passwordForm" data-aos="fade-up" data-aos-delay="200" data-aos-duration="800">
+                <div class="mb-3">
+                    <label for="password" class="form-label">Enter your password</label>
+                    <input type="password" id="password" name="password" class="form-control" required aria-describedby="passwordHelp" autocomplete="new-password" minlength="6" maxlength="128" />
+                    <div id="passwordHelp" class="form-text">Password must be between 6 and 128 characters.</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 btn-loading" aria-label="Check password strength" data-aos="zoom-in" data-aos-delay="400" data-aos-duration="600">
+                    <span class="btn-text"><i class="bi bi-search me-2"></i> Check Password</span>
+                    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                </button>
+            </form>
+            {% if password %}
+            <section class="mt-5" aria-live="polite" aria-atomic="true" aria-relevant="additions" data-aos="fade-up" data-aos-delay="600" data-aos-duration="800">
+                <div class="card shadow-sm" data-tilt data-tilt-glare data-tilt-max="10" tabindex="0" aria-label="Password analysis results">
+                    <div class="card-header bg-primary text-white rounded-top">
+                        <h2 class="h5 mb-0"><i class="bi bi-bar-chart-fill me-2"></i> Analysis Results</h2>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Password Score
+                                <div class="w-50">
+                                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="{{ score }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Password score out of 10">
+                                        <div class="progress-bar {% if score <= 2 %}bg-danger{% elif score <= 4 %}bg-warning{% elif score <= 7 %}bg-info{% else %}bg-success{% endif %}" style="width: {{ (score / 10.0) * 100 }}%;"></div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-secondary rounded-pill ms-2">{{ score }}/10</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Strength
+                                <span class="badge strength-badge {% if strength == 'Very Weak' %}strength-very-weak{% elif strength == 'Weak' %}strength-weak{% elif strength == 'Medium' %}strength-medium{% elif strength == 'Strong' %}strength-strong{% elif strength == 'Very Strong' %}strength-very-strong{% else %}text-muted{% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Password strength level">{{ strength }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Entropy
+                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Password entropy in bits">{{ entropy|round(2) }} bits</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Crack Time Estimate
+                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="Estimated time to crack the password">
+                                    {% if crack_time < 60 %}{{ crack_time|round(2) }} seconds <i class="bi bi-exclamation-triangle-fill text-danger" aria-label="Very Weak"></i>
+                                    {% elif crack_time < 3600 %}{{ (crack_time/60)|round(2) }} minutes
+                                    {% elif crack_time < 86400 %}{{ (crack_time/3600)|round(2) }} hours
+                                    {% elif crack_time < 31536000 %}{{ (crack_time/86400)|round(2) }} days
+                                    {% else %}{{ (crack_time/31536000)|round(2) }} years <i class="bi bi-check-circle-fill text-success" aria-label="Very Strong"></i>
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Breach Status
+                                <span class="badge breach-status {% if breached == true %}breach-found{% elif breached == false %}breach-not-found{% else %}breach-error{% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Password breach status">
+                                    {% if breached == true %}<i class="bi bi-exclamation-octagon-fill icon-large" aria-hidden="true"></i> Found in {{ count }} breaches
+                                    {% elif breached == false %}<i class="bi bi-shield-check icon-large" aria-hidden="true"></i> Not found in known breaches
+                                    {% else %}<i class="bi bi-exclamation-triangle icon-large" aria-hidden="true"></i> API Error
+                                    {% endif %}
+                                </span>
+                            </li>
+                        </ul>
+                        {% if feedback %}
+                        <div class="mt-4" data-aos="fade-in" data-aos-delay="800" data-aos-duration="800">
+                            <h3 class="h6">Suggestions to Improve:</h3>
+                            <ul class="mb-0">
+                                {% for tip in feedback %}
+                                <li class="feedback">{{ tip }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        AOS.init({
+            once: true,
+            duration: 800,
+            easing: 'ease-out-cubic',
+        });
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            darkModeToggle.textContent = document.body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
+        });
+
+        // Initialize Vanilla Tilt
+        VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+            glare: true,
+            "max-glare": 0.5,
+            scale: 1.05,
+            speed: 400,
+            transition: true,
+        });
+
+        // Confetti celebration for Very Strong password only
+        function celebrate() {
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        // Animate progress bar width on load
+        function animateProgressBar() {
+            const progressBar = document.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.width = progressBar.getAttribute('aria-valuenow') / 10 * 100 + '%';
+            }
+        }
+
+        // Animate crack time and entropy panel
+        function animateAnalysisPanel() {
+            const analysisSection = document.querySelector('section[aria-live]');
+            if (analysisSection) {
+                analysisSection.style.opacity = 0;
+                analysisSection.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    analysisSection.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    analysisSection.style.opacity = 1;
+                    analysisSection.style.transform = 'translateY(0)';
+                }, 100);
+            }
+        }
+
+        // Tooltip initialization
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Sound effects (optional)
+        const soundEnabled = true;
+        const soundMap = {
+            success: new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg'),
+            error: new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg'),
+        };
+
+        function playSound(type) {
+            if (soundEnabled && soundMap[type]) {
+                soundMap[type].play();
+            }
+        }
+
+        // Form submission handler
+        const form = document.getElementById('passwordForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        form.addEventListener('submit', () => {
+            submitBtn.classList.add('loading');
+            playSound('success');
+        });
+
+        // After page load animations and effects
+        window.addEventListener('load', () => {
+            animateProgressBar();
+            animateAnalysisPanel();
+
+            // Check if password strength is Very Strong to trigger celebration and sound
+            const strengthBadgeVeryStrong = document.querySelector('.strength-very-strong');
+            if (strengthBadgeVeryStrong && strengthBadgeVeryStrong.textContent.trim() === 'Very Strong') {
+                celebrate();
+                playSound('success');
+            }
+        });
+
+        // Three.js rolling shapes background
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('bgCanvas'), antialias: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 1);
+
+        camera.position.z = 20;
+
+        // Create multiple rolling shapes
+        const shapes = [];
+        const geometryTypes = [
+            new THREE.BoxGeometry(2, 2, 2),
+            new THREE.SphereGeometry(1.2, 32, 32),
+            new THREE.ConeGeometry(1.2, 2, 32),
+            new THREE.TorusGeometry(1, 0.4, 16, 100)
+        ];
+        const material = new THREE.MeshStandardMaterial({color: 0x0077ff, roughness: 0.5, metalness: 0.7});
+
+        for (let i = 0; i < 15; i++) {
+            const geometry = geometryTypes[i % geometryTypes.length];
+            const mesh = new THREE.Mesh(geometry, material.clone());
+            mesh.position.set(
+                (Math.random() - 0.5) * 40,
+                (Math.random() - 0.5) * 20,
+                (Math.random() - 0.5) * 10
+            );
+            mesh.rotationSpeed = {
+                x: (Math.random() - 0.5) * 0.02,
+                y: (Math.random() - 0.5) * 0.02,
+                z: (Math.random() - 0.5) * 0.02
+            };
+            shapes.push(mesh);
+            scene.add(mesh);
+        }
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            shapes.forEach(shape => {
+                shape.rotation.x += shape.rotationSpeed.x;
+                shape.rotation.y += shape.rotationSpeed.y;
+                shape.rotation.z += shape.rotationSpeed.z;
+                shape.position.x += 0.05;
+                if (shape.position.x > 25) {
+                    shape.position.x = -25;
+                }
+            });
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
