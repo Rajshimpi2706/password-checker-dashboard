@@ -1,6 +1,7 @@
 🔐 SecurePass Dashboard
 
 SecurePass is your trusted cybersecurity companion.
+
 Instantly assess password strength, check breach history, and receive actionable security feedback — all powered by modern, privacy-first technology.
 
 🌐 Live Demo: https://securepass-dashboard.onrender.com
@@ -8,9 +9,13 @@ Instantly assess password strength, check breach history, and receive actionable
 🚀 Features
 
 ✅ Real-time password strength scoring
+
 ✅ Breach detection via HaveIBeenPwned API
+
 ✅ Entropy and estimated crack-time feedback
+
 ✅ Modern, responsive dashboard UI
+
 ✅ Clean, privacy-first architecture (no passwords stored)
 
 🛠️ Tech Stack
@@ -26,13 +31,17 @@ Requests, Regex (Re), OS Libraries
 📄 How to Run Locally
 
 git clone https://github.com/Rajshimpi2706/password-checker-dashboard.git
+
 cd password-checker-dashboard
+
 pip install -r requirements.txt
+
 python app.py
 
 ⚠️ Security Note
 
 ✅ Your passwords are never stored.
+
 ✅ Breach checks are securely performed via APIs.
 
 📢 License
