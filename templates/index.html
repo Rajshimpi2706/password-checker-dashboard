@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SecurePass – Password Strength Checker</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sp-dark-bg: #151a23;
+      --sp-dark-bg2: #232b39;
+      --sp-primary: #2ec4f1;
+      --sp-accent: #6ef3c2;
+      --sp-gradient: linear-gradient(105deg, #2ec4f1 0%, #6ef3c2 100%);
+      --sp-gradient-reverse: linear-gradient(105deg, #6ef3c2 0%, #2ec4f1 100%);
+      --sp-card-bg: rgba(29,36,48,0.96);
+      --sp-card-shadow: 0 4px 32px 0 rgba(46,196,241,0.10);
+      --sp-border: #263144;
+      --sp-footer-bg: #11161e;
+    }
+    body {
+      background: var(--sp-gradient);
+      background-attachment: fixed;
+      min-height: 100vh;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      color: #f8fafb;
+      letter-spacing: 0.01em;
+    }
+    .sp-bg-dark {
+      background: var(--sp-dark-bg);
+    }
+    .sp-hero {
+      padding-top: 5.5rem; padding-bottom: 5rem;
+      background: var(--sp-dark-bg2);
+      background: linear-gradient(120deg, #131923 80%, #27364b 100%);
+      min-height: 70vh;
+      position: relative;
+      overflow: hidden;
+    }
+    .sp-hero::before {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      top: -30%; left: 60%;
+      width: 60vw; height: 120vh;
+      background: radial-gradient(ellipse at top, #2ec4f1 0%, transparent 70%);
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    .sp-hero-content {
+      position: relative; z-index: 2;
+    }
+    .sp-hero-title {
+      font-size: 2.7rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      margin-bottom: 1.1rem;
+      background: var(--sp-gradient-reverse);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sp-hero-lead {
+      font-size: 1.23rem;
+      color: #dff6fb;
+      max-width: 44rem;
+      margin-bottom: 2.2rem;
+    }
+    .sp-cta-btn {
+      background: var(--sp-gradient);
+      border: none;
+      color: #0a2237;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.7em 1.8em;
+      border-radius: 2em;
+      box-shadow: 0 2px 24px 0 #2ec4f185;
+      transition: background 0.3s, color 0.2s;
+    }
+    .sp-cta-btn:hover, .sp-cta-btn:focus {
+      color: #fff;
+      background: var(--sp-gradient-reverse);
+      box-shadow: 0 6px 32px 0 #2ec4f1b5;
+    }
+
+    .sp-section {
+      padding: 4.5rem 0 3.5rem 0;
+      background: var(--sp-dark-bg);
+    }
+    .sp-card {
+      background: var(--sp-card-bg);
+      border: 1.5px solid var(--sp-border);
+      border-radius: 1.25rem;
+      box-shadow: var(--sp-card-shadow);
+      padding: 2.3rem 2rem 2rem 2rem;
+      margin-bottom: 2rem;
+      transition: box-shadow 0.25s, border 0.2s;
+    }
+    .sp-card:hover {
+      border-color: #2ec4f1;
+      box-shadow: 0 8px 40px 0 #2ec4f199;
+    }
+    .sp-section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: var(--sp-gradient-reverse);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sp-feature-icon {
+      font-size: 2.4rem;
+      color: var(--sp-primary);
+      background: #1e293b;
+      border-radius: 50%;
+      padding: 0.5em;
+      margin-bottom: 0.7rem;
+      box-shadow: 0 2px 12px #2ec4f1a0;
+      display: inline-block;
+    }
+    .sp-step {
+      text-align: center;
+      padding: 2rem 1.2rem 1rem 1.2rem;
+      border-radius: 1.1rem;
+      background: rgba(36,45,66,0.88);
+      border: 1.3px solid #213047;
+      margin-bottom: 1.2rem;
+      transition: box-shadow 0.19s;
+    }
+    .sp-step:hover {
+      box-shadow: 0 4px 32px #2ec4f1a1;
+      border-color: var(--sp-primary);
+    }
+    .sp-step-number {
+      font-size: 1.15rem;
+      color: var(--sp-accent);
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+    .sp-step-icon {
+      font-size: 2.35rem;
+      margin-bottom: 0.5rem;
+      color: var(--sp-primary);
+      background: #172030;
+      border-radius: 50%;
+      padding: 0.32em 0.45em;
+      box-shadow: 0 2px 12px #2ec4f1a0;
+      display: inline-block;
+    }
+    .sp-feature-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    .sp-feature-list li {
+      font-size: 1.09rem;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: flex-start;
+    }
+    .sp-feature-list .bi {
+      color: var(--sp-accent);
+      margin-right: 0.75em;
+      font-size: 1.5em;
+    }
+    .sp-notice {
+      background: rgba(46,196,241,0.08);
+      border: 1.5px solid #2ec4f1;
+      color: #e7fafd;
+      font-size: 1.05rem;
+      padding: 1.1rem 1.5rem;
+      border-radius: 1em;
+      margin-top: 2.1rem;
+      margin-bottom: 0.7rem;
+      text-align: center;
+    }
+    .sp-bottom-cta {
+      background: var(--sp-gradient);
+      color: #0a2237;
+      padding: 2.7rem 0 2.2rem 0;
+      text-align: center;
+    }
+    .sp-bottom-cta h2 {
+      font-weight: 800;
+      font-size: 2.2rem;
+      margin-bottom: 1.4rem;
+      color: #0a2237; /* No gradient text for clarity */
+    }
+    .sp-footer {
+      background: var(--sp-footer-bg);
+      color: #b7c7e0;
+      padding: 2rem 0 1.2rem 0;
+      border-top: 1.5px solid #232f41;
+      font-size: 0.99rem;
+    }
+    .sp-footer .sp-socials a {
+      color: #b7c7e0;
+      margin-right: 1.2rem;
+      font-size: 1.6em;
+      transition: color 0.2s;
+    }
+    .sp-footer .sp-socials a:hover {
+      color: #2ec4f1;
+    }
+    .sp-footer .footer-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.01em;
+      color: #fff;
+      background: var(--sp-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Animations */
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeInUp 0.8s forwards;
+    }
+    .fade-in-up.delay1 { animation-delay: 0.15s; }
+    .fade-in-up.delay2 { animation-delay: 0.32s; }
+    .fade-in-up.delay3 { animation-delay: 0.48s; }
+    .fade-in-up.delay4 { animation-delay: 0.65s; }
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .sp-hero-title { font-size: 2rem; }
+      .sp-section { padding: 3.2rem 0 2.2rem 0; }
+      .sp-bottom-cta h2 { font-size: 1.5rem; }
+    }
+    @media (max-width: 600px) {
+      .sp-hero { padding-top: 3rem; padding-bottom: 2.5rem; }
+      .sp-section { padding: 2.5rem 0 1.2rem 0;}
+      .sp-card { padding: 1.4rem 0.7rem;}
+      .input-group.mb-3 {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .input-group.mb-3 .form-control,
+      .input-group.mb-3 .sp-cta-btn {
+        width: 100%!important;
+        min-width: 0!important;
+        border-radius: 1.8em!important;
+        margin-bottom: 0.5em;
+      }
+    }
+  .analysis-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 32px 0 #2ec4f133;
+    max-width: 480px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .analysis-card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.2rem;
+    padding: 1.05rem 1.4rem;
+    border-bottom: 1px solid #e3e9f3;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+  }
+  .analysis-card-body {
+    padding: 1.2rem 1.4rem;
+  }
+  .analysis-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65em 0;
+    border-bottom: 1px solid #f0f4fa;
+    font-size: 1.07rem;
+  }
+  .analysis-row:last-child {
+    border-bottom: none;
+  }
+  .analysis-label {
+    color: #34495e;
+    font-weight: 500;
+  }
+  .analysis-score {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+  }
+  .score-bar-bg {
+    background: #e3e9f3;
+    border-radius: 1.7em;
+    width: 110px;
+    height: 13px;
+    overflow: hidden;
+    margin-right: 0.5em;
+  }
+  .score-bar-fill {
+    background: linear-gradient(90deg, #1976d2 60%, #6ef3c2 100%);
+    height: 100%;
+    border-radius: 2em;
+    transition: width 0.7s cubic-bezier(.7,1,.7,1);
+  }
+  .score-value {
+    color: #34495e;
+    font-weight: 700;
+    font-size: 1em;
+  }
+  .strength-badge {
+    border-radius: 1.5em;
+    font-weight: 600;
+    font-size: 1em;
+    padding: 0.35em 1.1em;
+    color: #fff;
+    background: #bdbdbd;
+    box-shadow: 0 2px 12px #2ec4f12e;
+  }
+  .strength-very-weak { background: #ec407a; }
+  .strength-weak { background: #bdbdbd; }
+  .strength-medium { background: #ffb300; }
+  .strength-strong { background: #43a047; box-shadow: 0 0 8px #6ef3c2; }
+  .strength-very-strong { background: #1976d2; box-shadow: 0 0 10px #1976d2; }
+  .breach-badge {
+    border-radius: 1.5em;
+    font-weight: 600;
+    font-size: 1em;
+    padding: 0.38em 1.1em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  .bg-success {
+    background: #2ecc71 !important;
+    color: #fff !important;
+  }
+  .bg-danger {
+    background: #e74c3c !important;
+    color: #fff !important;
+  }
+  .bg-warning {
+    background: #ffb300 !important;
+    color: #222 !important;
+  }
+  .analysis-feedback {
+    padding: 1rem 1.5rem 1.1rem 1.5rem;
+    background: #f6f9fc;
+    border-top: 1px solid #e3e9f3;
+    color: #344;
+    font-size: 1.01em;
+    border-radius: 0 0 16px 16px;
+  }
+  .analysis-feedback ul {
+    margin: 0 0 0 1em;
+  }
+</style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="sp-hero d-flex align-items-center">
+    <div class="container sp-hero-content text-center">
+      <span class="badge rounded-pill px-3 py-2 mb-4" style="background: var(--sp-gradient); color: #13314e; font-weight:600; letter-spacing:0.05em;">
+        <i class="bi bi-shield-lock-fill me-2"></i>SecurePass
+      </span>
+      <h1 class="sp-hero-title fade-in-up delay1">
+        Protect Your Passwords, Check Their Strength Instantly.
+      </h1>
+    <div class="sp-hero-lead mb-4 fade-in-up delay2 text-center mx-auto" style="max-width: 700px;">
+      <p style="font-size: 1.2rem; color: #ffffffff; font-weight: 500;">
+        <strong>SecurePass</strong> is your trusted cybersecurity companion. Instantly assess password strength, check breach history, and get actionable security feedback — all with modern, privacy-first technology.
+      </p>
+    </div>
+
+
+      <form action="/check" method="post" class="mx-auto" style="max-width: 600px;">
+        <div class="input-group mb-3" style="max-width: 600px; margin: 0 auto;">
+          <input type="password" class="form-control" name="password" placeholder="Enter your password"
+              aria-label="Password" required autocomplete="new-password"
+              maxlength="128"
+              style="flex: 1 1 auto; min-width: 70%;">
+          <button type="submit" class="sp-cta-btn" style="flex: 0 0 auto; padding: 0.7em 1.5em; font-size:1rem;">
+            <i class="bi bi-search"></i> Check
+          </button>
+        </div>
+        </form>
+        {% if suggestion %}
+        <div class="alert alert-warning text-center" style="max-width: 600px; margin: 0 auto;">
+            {{ suggestion }}
+        </div>
+        {% endif %}
+        <div class="mt-2" style="color: #89b8d7; font-size:0.98em;">
+            <i class="bi bi-lock"></i> Instant, private, secure. No passwords are ever stored.
+        </div>
+    </div>
+</section>
+
+  {% if password is defined %}
+  <section class="sp-section" id="result">
+    <div class="container d-flex justify-content-center">
+      <div class="analysis-card">
+        <div class="analysis-card-header">
+          <i class="bi bi-bar-chart-fill me-2"></i>Analysis Results
+        </div>
+        <div class="analysis-card-body">
+          <div class="analysis-row">
+            <div class="analysis-label">Password Score</div>
+            <div class="analysis-score">
+              <div class="score-bar-bg">
+                <div class="score-bar-fill" style="width: {{ score * 10 }}%;"></div>
+              </div>
+              <span class="score-value">{{ score }}/10</span>
+            </div>
+          </div>
+          <div class="analysis-row">
+            <div class="analysis-label">Strength</div>
+            <span class="badge strength-badge strength-{{ strength|lower|replace(' ', '-') }}">
+              {{ strength }}
+            </span>
+          </div>
+          <div class="analysis-row">
+            <div class="analysis-label">Entropy</div>
+            <span style="color:#344;">{{ entropy|round(2) }} bits</span>
+          </div>
+          <div class="analysis-row">
+            <div class="analysis-label">Crack Time Estimate</div>
+            <span style="color:#344;">
+              {{ crack_time|round(2) }}
+              {% if crack_time < 60 %}
+                seconds
+              {% elif crack_time < 3600 %}
+                minutes
+              {% elif crack_time < 86400 %}
+                hours
+              {% elif crack_time < 31536000 %}
+                days
+              {% else %}
+                years
+              {% endif %}
+              {% if crack_time >= 31536000 %}
+              <i class="bi bi-check-circle-fill text-success"></i>
+              {% endif %}
+            </span>
+          </div>
+          <div class="analysis-row">
+            <div class="analysis-label">Breach Status</div>
+            {% if breached == true %}
+              <span class="badge breach-badge bg-danger"><i class="bi bi-exclamation-octagon"></i> Found in {{ count }} breaches</span>
+            {% elif breached == false %}
+              <span class="badge breach-badge bg-success"><i class="bi bi-shield-check"></i> Not found in known breaches</span>
+            {% else %}
+              <span class="badge breach-badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> API Error</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if feedback %}
+        <div class="analysis-feedback mt-3">
+          <div class="fw-semibold mb-2" style="color:#344;">Suggestions to Improve:</div>
+          <ul>
+          {% for tip in feedback %}
+            <li>{{ tip }}</li>
+          {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- About Section -->
+  <section class="sp-section" id="about">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-7 mb-4 mb-lg-0">
+          <h2 class="sp-section-title fade-in-up">What is SecurePass?</h2>
+          <p class="fs-5 fade-in-up delay2" style="color:#d8e6f6;">
+            SecurePass is a next-generation password strength checker designed for modern cybersecurity needs. Our tool analyzes your password in real-time, providing a detailed security assessment. 
+          </p>
+          <ul class="sp-feature-list fade-in-up delay3">
+            <li><i class="bi bi-shield-check"></i> Checks if your password has been exposed in past breaches</li>
+            <li><i class="bi bi-lightning-charge"></i> Calculates password entropy and estimated crack times</li>
+            <li><i class="bi bi-bar-chart"></i> Gives clear, actionable feedback to help you create stronger passwords</li>
+            <li><i class="bi bi-lock"></i> All analysis happens instantly and securely—your password never leaves your browser/server</li>
+          </ul>
+        </div>
+        <div class="col-lg-5 text-center fade-in-up delay4">
+          <div class="sp-card d-inline-block shadow-lg">
+            <div class="mb-3">
+              <i class="bi bi-terminal-lock sp-feature-icon"></i>
+            </div>
+            <div style="font-size:1.18rem;font-weight:600; color:#b8f0f9;">
+              Privacy-first <br> Password Security
+            </div>
+            <div style="color:#b5c7e3;font-size:1rem;">
+              Real-time, AI-driven analysis with secure breach detection.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="sp-section sp-bg-dark" id="how-it-works" style="background:var(--sp-dark-bg2);">
+    <div class="container">
+      <h2 class="sp-section-title text-center mb-5">How It Works</h2>
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-step fade-in-up delay1">
+            <div class="sp-step-number">Step 1</div>
+            <div class="sp-step-icon"><i class="bi bi-key"></i></div>
+            <div class="fw-semibold mt-2">Enter Your Password</div>
+            <div style="color:#aecbe6; font-size:0.99em;">Type or paste your password into the secure checker form.</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-step fade-in-up delay2">
+            <div class="sp-step-number">Step 2</div>
+            <div class="sp-step-icon"><i class="bi bi-bar-chart-line"></i></div>
+            <div class="fw-semibold mt-2">Instant Security Analysis</div>
+            <div style="color:#aecbe6; font-size:0.99em;">Our algorithm evaluates strength, entropy, and diversity in real-time.</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-step fade-in-up delay3">
+            <div class="sp-step-number">Step 3</div>
+            <div class="sp-step-icon"><i class="bi bi-database-check"></i></div>
+            <div class="fw-semibold mt-2">Breach & Leak Check</div>
+            <div style="color:#aecbe6; font-size:0.99em;">Checks your password (securely, hashed) against global breach databases.</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-step fade-in-up delay4">
+            <div class="sp-step-number">Step 4</div>
+            <div class="sp-step-icon"><i class="bi bi-lightbulb"></i></div>
+            <div class="fw-semibold mt-2">Get Actionable Feedback</div>
+            <div style="color:#aecbe6; font-size:0.99em;">Receive easy tips and security suggestions to improve your password.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="sp-section" id="features">
+    <div class="container">
+      <h2 class="sp-section-title text-center mb-5">Features</h2>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-card text-center fade-in-up delay1">
+            <div class="mb-2"><i class="bi bi-database-exclamation sp-feature-icon"></i></div>
+            <div class="fw-semibold mb-1">Breach Detection</div>
+            <div style="color:#aad2ec;">Checks your password against the HaveIBeenPwned API to see if it’s ever been leaked.</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-card text-center fade-in-up delay2">
+            <div class="mb-2"><i class="bi bi-activity sp-feature-icon"></i></div>
+            <div class="fw-semibold mb-1">Entropy Measurement</div>
+            <div style="color:#aad2ec;">Calculates the entropy of your password for a true security score, not just rules.</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-card text-center fade-in-up delay3">
+            <div class="mb-2"><i class="bi bi-clock-history sp-feature-icon"></i></div>
+            <div class="fw-semibold mb-1">Crack Time Estimation</div>
+            <div style="color:#aad2ec;">Estimates how long it would take for an attacker to crack your password.</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="sp-card text-center fade-in-up delay4">
+            <div class="mb-2"><i class="bi bi-chat-dots sp-feature-icon"></i></div>
+            <div class="fw-semibold mb-1">Real-time Feedback</div>
+            <div style="color:#aad2ec;">Get instant, actionable suggestions to strengthen your password security.</div>
+          </div>
+        </div>
+      </div>
+      <div class="sp-notice fade-in-up delay2 mt-5">
+        <i class="bi bi-shield-lock"></i>
+        <b>Security Notice:</b> SecurePass never stores your passwords—ever. All analysis is performed securely, and breach checks are done using industry-standard k-Anonymity (HIBP API). Your privacy is our priority.
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="sp-bottom-cta">
+    <div class="container">
+      <h2 class="fade-in-up" style="font-weight:800; font-size:2.2rem; margin-bottom:1.4rem; color:#0a2237;">
+        Ready to Secure Your Passwords?
+      </h2>
+      <a href="#top" class="sp-cta-btn mt-2" style="padding:0.7em 1.8em; font-size:1rem;">
+        <i class="bi bi-shield-lock"></i> Try SecurePass Free
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="sp-footer">
+    <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between">
+      <div class="footer-brand mb-2 mb-md-0">
+        <i class="bi bi-shield-lock-fill"></i> SecurePass &copy; 2025
+      </div>
+      <div class="sp-socials">
+        <a href="https://github.com/your-github-username/SecurePass" target="_blank" rel="noopener" aria-label="GitHub">
+          <i class="bi bi-github"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/your-linkedin-profile" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <i class="bi bi-linkedin"></i>
+        </a>
+      </div>
+    </div>
+    <div class="text-end mt-2" style="font-size:0.93em; color:#7fa1c3;">
+      Designed for modern cybersecurity – Built with Flask & Bootstrap.
+    </div>
+  </footer>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Animate fade-in
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.fade-in-up').forEach(el => {
+        el.style.animationPlayState = 'running';
+      });
+    });
+  </script>
+</body>
+</html>
