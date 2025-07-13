@@ -4,6 +4,7 @@ import hashlib
 import requests
 import math
 import logging
+import os
 
 app = Flask(__name__)
 
@@ -128,5 +129,6 @@ def check():
                            entropy=entropy,
                            crack_time=crack_time)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
