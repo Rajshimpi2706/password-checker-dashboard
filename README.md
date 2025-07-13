@@ -1,4 +1,5 @@
 🔐 SecurePass Dashboard
+
 SecurePass is your trusted cybersecurity companion.
 Instantly assess password strength, check breach history, and receive actionable security feedback — all powered by modern, privacy-first technology.
 
